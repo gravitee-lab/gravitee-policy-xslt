@@ -20,8 +20,8 @@ import io.gravitee.common.http.HttpHeadersValues;
 import io.gravitee.common.http.HttpStatusCode;
 import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
-import io.gravitee.gateway.api.http.BodyPart;
-import io.gravitee.gateway.api.http.StringBodyPart;
+import io.gravitee.gateway.api.buffer.Buffer;
+import io.gravitee.gateway.api.stream.BufferedReadWriteStream;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.SimpleReadWriteStream;
 import io.gravitee.policy.api.PolicyChain;
@@ -62,12 +62,12 @@ public class XSLTTransformationPolicy {
 
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response) {
-        return new SimpleReadWriteStream<BodyPart>() {
+        return new BufferedReadWriteStream() {
             StringBuffer buffer = new StringBuffer();
 
             @Override
-            public SimpleReadWriteStream<BodyPart> write(BodyPart content) {
-                buffer.append(new String(content.getBodyPartAsBytes()));
+            public SimpleReadWriteStream<Buffer> write(Buffer chunk) {
+                buffer.append(chunk.toString());
                 return this;
             }
 
@@ -107,7 +107,7 @@ public class XSLTTransformationPolicy {
                 response.headers().remove(HttpHeaders.TRANSFER_ENCODING);
                 response.headers().set(HttpHeaders.CONTENT_LENGTH, Integer.toString(content.length()));
 
-                super.write(new StringBodyPart(content));
+                super.write(Buffer.buffer(content));
                 super.end();
             }
         };
