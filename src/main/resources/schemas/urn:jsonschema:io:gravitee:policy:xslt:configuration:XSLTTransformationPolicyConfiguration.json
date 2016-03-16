@@ -1,0 +1,40 @@
+{
+  "type" : "object",
+  "id" : "urn:jsonschema:io:gravitee:policy:xslt:configuration:XSLTTransformationPolicyConfiguration",
+  "properties" : {
+    "stylesheet" : {
+      "title": "XSLT stylesheet",
+      "type" : "string",
+      "x-schema-form": {
+        "type": "textarea",
+        "placeholder": "Place your XSLT stylesheet here"
+      }
+    },
+    "parameters" : {
+      "type" : "array",
+      "title": "XSLT parameters",
+      "items" : {
+        "type" : "object",
+        "id" : "urn:jsonschema:io:gravitee:policy:xslt:configuration:XSLTParameter",
+        "title": "Parameter",
+        "properties" : {
+          "name" : {
+            "title": "Name",
+            "type" : "string"
+          },
+          "value" : {
+            "title": "Value",
+            "type" : "string"
+          }
+        },
+        "required": [
+          "name",
+          "value"
+        ]
+      }
+    }
+  },
+  "required": [
+    "stylesheet"
+  ]
+}
