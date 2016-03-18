@@ -23,7 +23,6 @@ import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.stream.BufferedReadWriteStream;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
-import io.gravitee.gateway.api.stream.SimpleReadWriteStream;
 import io.gravitee.policy.api.PolicyChain;
 import io.gravitee.policy.api.annotations.OnResponse;
 import io.gravitee.policy.api.annotations.OnResponseContent;
@@ -67,7 +66,7 @@ public class XSLTTransformationPolicy {
             Buffer buffer = Buffer.buffer();
 
             @Override
-            public SimpleReadWriteStream<Buffer> write(Buffer chunk) {
+            public BufferedReadWriteStream write(Buffer chunk) {
                 buffer.appendBuffer(chunk);
                 return this;
             }
