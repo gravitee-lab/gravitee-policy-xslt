@@ -62,12 +62,13 @@ public class XSLTTransformationPolicy {
 
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response) {
+
         return new BufferedReadWriteStream() {
-            StringBuffer buffer = new StringBuffer();
+            Buffer buffer = Buffer.buffer();
 
             @Override
             public SimpleReadWriteStream<Buffer> write(Buffer chunk) {
-                buffer.append(chunk.toString());
+                buffer.appendBuffer(chunk);
                 return this;
             }
 
@@ -78,7 +79,7 @@ public class XSLTTransformationPolicy {
                 try {
                     Templates template = TransformerFactory.getInstance().getTemplate(
                             xsltTransformationPolicyConfiguration.getStylesheet());
-                    InputStream xslInputStream = new ByteArrayInputStream(buffer.toString().getBytes("UTF-8"));
+                    InputStream xslInputStream = new ByteArrayInputStream(buffer.getBytes());
                     Source xslInput = new StreamSource(xslInputStream);
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     Result result = new StreamResult(baos);
