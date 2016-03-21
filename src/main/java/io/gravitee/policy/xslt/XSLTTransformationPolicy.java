@@ -15,14 +15,13 @@
  */
 package io.gravitee.policy.xslt;
 
-import io.gravitee.common.http.HttpHeaders;
-import io.gravitee.common.http.HttpHeadersValues;
-import io.gravitee.common.http.HttpStatusCode;
+import io.gravitee.common.http.MediaType;
 import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
-import io.gravitee.gateway.api.stream.BufferedReadWriteStream;
+import io.gravitee.gateway.api.http.stream.TransformableResponseStream;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
+import io.gravitee.gateway.api.stream.exception.TransformationException;
 import io.gravitee.policy.api.PolicyChain;
 import io.gravitee.policy.api.annotations.OnResponse;
 import io.gravitee.policy.api.annotations.OnResponseContent;
@@ -61,20 +60,15 @@ public class XSLTTransformationPolicy {
 
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response) {
-
-        return new BufferedReadWriteStream() {
-            Buffer buffer = Buffer.buffer();
+        return new TransformableResponseStream(response) {
 
             @Override
-            public BufferedReadWriteStream write(Buffer chunk) {
-                buffer.appendBuffer(chunk);
-                return this;
+            protected String to() {
+                return MediaType.APPLICATION_XML;
             }
 
             @Override
-            public void end() {
-                String content;
-
+            protected Buffer transform() throws TransformationException {
                 try {
                     Templates template = TransformerFactory.getInstance().getTemplate(
                             xsltTransformationPolicyConfiguration.getStylesheet());
@@ -96,19 +90,10 @@ public class XSLTTransformationPolicy {
                     }
 
                     transformer.transform(xslInput, result);
-                    content = baos.toString();
-
+                    return Buffer.buffer(baos.toString());
                 } catch (Exception ex) {
-                    content = ex.getMessage();
-                    response.status(HttpStatusCode.INTERNAL_SERVER_ERROR_500);
-                    response.headers().set(HttpHeaders.CONNECTION, HttpHeadersValues.CONNECTION_CLOSE);
+                    throw new TransformationException("Unable to apply XSL Transformation: " + ex.getMessage(), ex);
                 }
-
-                response.headers().remove(HttpHeaders.TRANSFER_ENCODING);
-                response.headers().set(HttpHeaders.CONTENT_LENGTH, Integer.toString(content.length()));
-
-                super.write(Buffer.buffer(content));
-                super.end();
             }
         };
     }
