@@ -19,7 +19,7 @@ import io.gravitee.common.http.MediaType;
 import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
-import io.gravitee.gateway.api.http.stream.TransformableResponseStream;
+import io.gravitee.gateway.api.http.stream.TransformableStreamBuilder;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
 import io.gravitee.policy.api.PolicyChain;
@@ -60,41 +60,35 @@ public class XSLTTransformationPolicy {
 
     @OnResponseContent
     public ReadWriteStream onResponseContent(Response response) {
-        return new TransformableResponseStream(response) {
+        return TransformableStreamBuilder
+                .on(response)
+                .contentType(MediaType.APPLICATION_XML)
+                .transform(input -> {
+                    try {
+                        Templates template = TransformerFactory.getInstance().getTemplate(
+                                xsltTransformationPolicyConfiguration.getStylesheet());
+                        InputStream xslInputStream = new ByteArrayInputStream(input.getBytes());
+                        Source xslInput = new StreamSource(xslInputStream);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        Result result = new StreamResult(baos);
+                        Transformer transformer = template.newTransformer();
 
-            @Override
-            protected String to() {
-                return MediaType.APPLICATION_XML;
-            }
+                        // Add parameters
+                        if (xsltTransformationPolicyConfiguration.getParameters() != null) {
+                            xsltTransformationPolicyConfiguration.getParameters().forEach(
+                                    parameter -> {
+                                        if (parameter.getName() != null && ! parameter.getName().trim().isEmpty()) {
+                                            transformer.setParameter(parameter.getName(), parameter.getValue());
+                                        }
+                                    });
+                        }
 
-            @Override
-            protected Buffer transform() throws TransformationException {
-                try {
-                    Templates template = TransformerFactory.getInstance().getTemplate(
-                            xsltTransformationPolicyConfiguration.getStylesheet());
-                    InputStream xslInputStream = new ByteArrayInputStream(buffer.getBytes());
-                    Source xslInput = new StreamSource(xslInputStream);
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    Result result = new StreamResult(baos);
-                    Transformer transformer = template.newTransformer();
-
-                    // Add parameters
-                    if (xsltTransformationPolicyConfiguration.getParameters() != null) {
-                        xsltTransformationPolicyConfiguration.getParameters().forEach(
-                                parameter -> {
-                                    if (parameter.getName() != null && ! parameter.getName().trim().isEmpty()) {
-                                        transformer.setParameter(parameter.getName(), parameter.getValue());
-                                    }
-                                });
-
+                        transformer.transform(xslInput, result);
+                        return Buffer.buffer(baos.toString());
+                    } catch (Exception ex) {
+                        throw new TransformationException("Unable to apply XSL Transformation: " + ex.getMessage(), ex);
                     }
-
-                    transformer.transform(xslInput, result);
-                    return Buffer.buffer(baos.toString());
-                } catch (Exception ex) {
-                    throw new TransformationException("Unable to apply XSL Transformation: " + ex.getMessage(), ex);
-                }
-            }
-        };
+                })
+                .build();
     }
 }
