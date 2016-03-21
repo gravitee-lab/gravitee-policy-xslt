@@ -16,14 +16,11 @@
 package io.gravitee.policy.xslt;
 
 import io.gravitee.common.http.MediaType;
-import io.gravitee.gateway.api.Request;
 import io.gravitee.gateway.api.Response;
 import io.gravitee.gateway.api.buffer.Buffer;
 import io.gravitee.gateway.api.http.stream.TransformableStreamBuilder;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
-import io.gravitee.policy.api.PolicyChain;
-import io.gravitee.policy.api.annotations.OnResponse;
 import io.gravitee.policy.api.annotations.OnResponseContent;
 import io.gravitee.policy.xslt.configuration.XSLTTransformationPolicyConfiguration;
 import io.gravitee.policy.xslt.transformer.TransformerFactory;
@@ -51,11 +48,6 @@ public class XSLTTransformationPolicy {
 
     public XSLTTransformationPolicy(final XSLTTransformationPolicyConfiguration xsltTransformationPolicyConfiguration) {
         this.xsltTransformationPolicyConfiguration = xsltTransformationPolicyConfiguration;
-    }
-
-    @OnResponse
-    public void onResponse(Request request, Response response, PolicyChain policyChain) {
-        policyChain.doNext(request, response);
     }
 
     @OnResponseContent
