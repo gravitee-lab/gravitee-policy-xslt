@@ -15,8 +15,8 @@
  */
 package io.gravitee.policy.xslt.transformer;
 
+import io.gravitee.policy.xslt.transformer.saxon.SaxonTransformerFactory;
 import io.gravitee.policy.xslt.utils.Sha1;
-import net.sf.saxon.TransformerFactoryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,6 +65,6 @@ public final class TransformerFactory {
 
     private javax.xml.transform.TransformerFactory getTransformerFactory() {
         return javax.xml.transform.TransformerFactory.newInstance(
-                TransformerFactoryImpl.class.getName(), this.getClass().getClassLoader());
+                SaxonTransformerFactory.class.getName(), this.getClass().getClassLoader());
     }
 }
