@@ -18,7 +18,8 @@ endif::[]
 
 == Description
 
-XSLT Transformer policy lets you to apply an XSL transformation if your backend is exposing XML content.
+XSLT Transformer policy lets you apply an XSL transformation if your backend is exposing XML content.
+
 This policy is based on the well-known https://sourceforge.net/projects/saxon/[Saxon] library
 
 [source, xml]
