@@ -24,8 +24,8 @@ import io.gravitee.gateway.api.http.stream.TransformableRequestStreamBuilder;
 import io.gravitee.gateway.api.http.stream.TransformableResponseStreamBuilder;
 import io.gravitee.gateway.api.stream.ReadWriteStream;
 import io.gravitee.gateway.api.stream.exception.TransformationException;
-import io.gravitee.policy.api.annotations.OnRequestContent;
-import io.gravitee.policy.api.annotations.OnResponseContent;
+import io.gravitee.policy.api.ChainScope;
+import io.gravitee.policy.api.annotations.*;
 import io.gravitee.policy.xslt.configuration.PolicyScope;
 import io.gravitee.policy.xslt.configuration.XSLTTransformationPolicyConfiguration;
 import io.gravitee.policy.xslt.transformer.TransformerFactory;
@@ -50,6 +50,10 @@ import java.util.function.Function;
  * @author David BRASSELY (david.brassely at graviteesource.com)
  * @author GraviteeSource Team
  */
+@Policy(
+        category = @Category(io.gravitee.policy.api.Category.TRANSFORMATION),
+        scope = @Scope(ChainScope.API)
+)
 public class XSLTTransformationPolicy {
 
     /**
